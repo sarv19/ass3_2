@@ -520,31 +520,31 @@ class CheckerSuite(unittest.TestCase):
         expect = "Type Mismatch In Statement: "+ str(Return(ArrayType(1,6,IntType())))
         self.assertTrue(TestChecker.test(input,expect,1007))
 
-    def test_return8(self):
-        input = Program([FuncDecl(Id("main"),
-                            [VarDecl(Id('a'), IntType())],
-                            [VarDecl(Id('b'), FloatType()),
-                             VarDecl(Id('c'), BoolType())],
-                            [If(BinaryOp('and',Id('c'),Id('c')),
-                                                       [CallStmt(Id("putIntLn"),[Id("a")])],
-                                                       [CallStmt(Id("putFloat"),[Id("b")])]),
-                            Return(Id('a'))
-                            ],
-                            FloatType()
-                                 ),
-                         FuncDecl(Id("foo"),
-                                             [VarDecl(Id('a'), IntType())],
-                                             [VarDecl(Id('b'), FloatType()),
-                                              VarDecl(Id('c'), BoolType())],
-                                             [If(BinaryOp('and',Id('c'),Id('c')),
-                                                                        [CallStmt(Id("putIntLn"),[Id("a")]), Return(Id('a'))],
-                                                                        [CallStmt(Id("putFloat"),[Id("b")])]),
-                                             Return(Id('b'))
-                                             ],IntType()
-                                                  )
-                        ])
-        expect = "Type Mismatch In Statement: "+ str(Return(Id('b')))
-        self.assertTrue(TestChecker.test(input,expect,1008))
+    # def test_return8(self):
+    #     input = Program([FuncDecl(Id("main"),
+    #                         [VarDecl(Id('a'), IntType())],
+    #                         [VarDecl(Id('b'), FloatType()),
+    #                          VarDecl(Id('c'), BoolType())],
+    #                         [If(BinaryOp('and',Id('c'),Id('c')),
+    #                                                    [CallStmt(Id("putIntLn"),[Id("a")])],
+    #                                                    [CallStmt(Id("putFloat"),[Id("b")])]),
+    #                         Return(Id('a'))
+    #                         ],
+    #                         FloatType()
+    #                              ),
+    #                      FuncDecl(Id("foo"),
+    #                                          [VarDecl(Id('a'), IntType())],
+    #                                          [VarDecl(Id('b'), FloatType()),
+    #                                           VarDecl(Id('c'), BoolType())],
+    #                                          [If(BinaryOp('and',Id('c'),Id('c')),
+    #                                                                     [CallStmt(Id("putIntLn"),[Id("a")]), Return(Id('a'))],
+    #                                                                     [CallStmt(Id("putFloat"),[Id("b")])]),
+    #                                          Return(Id('b'))
+    #                                          ],IntType()
+    #                                               )
+    #                     ])
+    #     expect = "Type Mismatch In Statement: "+ str(Return(Id('b')))
+    #     self.assertTrue(TestChecker.test(input,expect,1008))
 
 
     # def test_body_func2(self):

@@ -1,0 +1,1 @@
+Program([FuncDecl(Id(main),[VarDecl(Id(a),IntType)],VoidType(),[VarDecl(Id(b),FloatType),VarDecl(Id(c),StringType),VarDecl(Id(d),BoolType)],[CallStmt(Id(putIntLn),[BinaryOp(*,Id(a),Id(a))]),CallStmt(Id(putFloat),[BinaryOp(*,Id(c),Id(a))]),CallStmt(Id(putIntLn),[BinaryOp(*,Id(a),Id(a))])])])

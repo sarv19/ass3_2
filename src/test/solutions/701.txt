@@ -1,0 +1,1 @@
+Type Mismatch In Statement: For(Id(b),BinaryOp(*,Id(a),Id(a)),Id(a),True,[])

@@ -1,0 +1,17 @@
+ procedure main();
+                    var a:integer;
+                    begin
+                        if a < 1
+                            then
+                                begin
+                                    while a > 1 do
+                                        with b : integer; do
+                                            if b < 1 then break;
+                                end
+                            else
+                                begin
+                                    continue;
+                                end
+                    end
+
+                    

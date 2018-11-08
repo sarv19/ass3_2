@@ -1,0 +1,7 @@
+
+                    procedure main();
+                    begin
+                        for a := 1 to 2 do
+                            break;
+                        return;
+                    end

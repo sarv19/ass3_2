@@ -1,0 +1,6 @@
+ procedure foo(a : array [1 .. 2] of real);
+                    var b : array [1 .. 2] of integer;
+                    begin
+                        foo(b);
+                        return;
+                    end

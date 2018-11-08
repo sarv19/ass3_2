@@ -1,0 +1,8 @@
+ function foo():integer;
+                    begin
+                        with a:integer; do
+                            begin
+                                with b:integer; do putIntLn(b);
+                                return 1;
+                            end
+                    end

@@ -1,0 +1,14 @@
+ procedure main();
+                    var a: integer;
+                    begin
+                        if (a < 1)
+                            then
+                                begin
+                                    for a := 1 to 5 do
+                                        break;
+                                    continue;
+                                end
+
+                    end
+
+                    

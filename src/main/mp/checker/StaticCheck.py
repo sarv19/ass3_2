@@ -68,9 +68,9 @@ class StaticChecker(BaseVisitor,Utils):
         except Redeclared as e:
             raise Redeclared(Parameter(),e.n)
         localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
-        for x in localenv:
-            print(x)
-        tmp = list(map(lambda x: self.visit(x,localenv + c),ast.body))
+        listt = localenv+ [Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))] + c
+
+        tmp = list(map(lambda x: self.visit(x,localenv+ [Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))] + c),ast.body))
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
         if type(ast.returnType) is VoidType:
             if ast.body is not None:
@@ -83,17 +83,8 @@ class StaticChecker(BaseVisitor,Utils):
                 if type(x) is Return:
                     checkExpr = self.checkInReturn(x, ast.returnType, localenv)
 
-        for x in ast.body:
-            
-        # for x in ast.body:
-        #     if x is Continue or Break:
-        #         if self.checkBrCont(ast.body) is True:
-        #             if type(x) is Break:
-        #                 raise BreakNotInLoop()
-        #             elif type(x) is Continue:
-        #                 raise ContinueNotInLoop()
-        #     else:
-        #         break
+        if self.checkBrCont(ast.body) is True:
+            raise BreakNotInLoop()
 
 
         return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
@@ -135,17 +126,17 @@ class StaticChecker(BaseVisitor,Utils):
         return False
 
     def checkBreakCont(self, stmt):
-        if type(stmt) is Break or Continue:
+        if type(stmt) is Break:
+            raise BreakNotInLoop()
+            return True
+        elif type(stmt) is Continue:
+            raise ContinueNotInLoop()
             return True
         elif type(stmt) is If:
             return (self.checkBrCont(stmt.thenStmt) or self.checkBrCont(stmt.elseStmt))
         elif type(stmt) is While: ### no error
-            check = self.checkBrCont(stmt.sl)
-            if check is True:
-                return False
+            return False
         elif type(stmt) is For:  ### no error
-            check =  self.checkBrCont(stmt.loop)
-            if check is True:
                 return False
         elif type(stmt) is With:
             return self.checkBrCont(stmt.stmt)
@@ -181,11 +172,15 @@ class StaticChecker(BaseVisitor,Utils):
 
     def checkTypeMisMatch(self, kind, err, tree, env):
         at = [self.visit(x,env) for x in tree.param] #get the type of param
+
         res = self.lookup(tree.method.name,env,lambda x: x.name) #find if CallStmt name is already had
+        print(type(res.mtype.partype))
         if res is None or not type(res.mtype) is MType or not type(res.mtype.rettype) is VoidType:
         #      Undeclared
             raise Undeclared(kind,tree.method.name)
-        elif len(res.mtype.partype) != len(at) or True in [type(a) != type(b) for a,b in zip(at,res.mtype.partype)]:
+        elif len(res.mtype.partype) != len(at) or True in [((type(a) != type(b)) and (type(a)!=FloatType or type(b)!=IntType) ) for a,b in zip(at,res.mtype.partype)]:
+            raise err
+        elif type(res.mtype.partype) is ArrayType and (res.lower is not at.lower or res.upper is not at.upper):
             raise err
         else:
             return res.mtype.rettype
@@ -211,6 +206,9 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitBooleanLiteral(self, ast, c):
         return BoolType()
+
+    def visitVoidType(self, ast, c):
+        return VoidType()
 
     def visitArrayType(self, ast, c):
         lower = ast.lower
@@ -254,7 +252,7 @@ class StaticChecker(BaseVisitor,Utils):
         elif ast.op is 'not' and type(exp) is BoolType:
             return exp
         else:
-            raise TypeMismatchInExpression(ast.body)
+            raise TypeMismatchInExpression(ast)
 
     def visitFor(self, ast, c):
         res = self.lookup(ast.id.name,c,lambda x:x.name)
@@ -270,7 +268,7 @@ class StaticChecker(BaseVisitor,Utils):
     def visitIf(self, ast, c):
         exp = self.visit(ast.expr, c)
         if type(exp) is not BoolType:
-            raise TypeMismatchInStatement(ast.expr)
+            raise TypeMismatchInStatement(ast)
         thenstmt = [self.visit(x, c) for x in ast.thenStmt]
         elsestmt = [self.visit(x, c) for x in ast.elseStmt]
 
@@ -290,7 +288,7 @@ class StaticChecker(BaseVisitor,Utils):
             if (type(lhs) is not FloatType) or (type(rhs) is not IntType):
                 raise TypeMismatchInStatement(ast)
         else:
-            return lhs
+            return Assign(lhs, rhs)
 
 
     def visitReturn(self, ast, c):
@@ -301,12 +299,14 @@ class StaticChecker(BaseVisitor,Utils):
     def visitWith(self, ast, c):
         try:
             decl = reduce(lambda x, y: [self.visit(y,x)] + x, ast.decl,[])
-        except Undeclared as e:
-            raise Undeclared(Identifier(),e.n) ## WRONG
+        except Redeclared as e:
+            raise Redeclared(Variable(),e.n) ## WRONG
         body = list(map(lambda x: self.visit(x, decl + c),ast.stmt))
 
     def visitArrayCell(self, ast, c):
         arr = self.visit(ast.arr, c)
         idx = self.visit(ast.idx, c)
-        if type(arr) is not ArrayType and type(idx) is not IntType:
+        if type(arr) is not ArrayType or type(idx) is not IntType:
             raise TypeMismatchInExpression(ast)
+        else:
+            return arr.eleType

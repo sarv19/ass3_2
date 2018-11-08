@@ -1,0 +1,11 @@
+ procedure notMain();
+                    begin
+                        if 1 > 2
+                            then
+                                if 2 > 1
+                                    then
+                                        return;
+                                    else
+                                        return;
+                        return;
+                    end

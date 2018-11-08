@@ -1,0 +1,5 @@
+ function notMain():integer;
+                    begin end
+
+                    procedure main();
+                    begin end

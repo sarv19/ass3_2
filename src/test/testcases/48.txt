@@ -1,0 +1,9 @@
+ function foo():integer;
+                    var a: integer;
+                    begin
+                        for a := 1 to 2 do
+                            return 1;
+                    end
+
+                    procedure main();
+                    begin end

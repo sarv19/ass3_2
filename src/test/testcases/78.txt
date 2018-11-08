@@ -1,0 +1,13 @@
+ procedure main();
+                    var a:integer;
+                    begin
+                        if a < 1
+                            then
+                                begin
+                                    for a := 1 to 2 do
+                                        break;
+                                    for a := 1.1 to 5 do
+                                        break;
+                                end
+                    end
+                    

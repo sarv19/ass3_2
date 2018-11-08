@@ -1,0 +1,5 @@
+function foo(a:integer):integer;
+                   var b: array [1 .. 2] of integer;
+                   begin return a; end
+                   procedure main();
+                   begin foo(1); end

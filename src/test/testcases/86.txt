@@ -1,0 +1,12 @@
+ procedure noMain();
+                    var a:real; b :integer;
+                    begin
+                        a := foo(b);
+                    end
+
+                    function foo(a:real):real;
+                    begin
+                        return 1;
+                    end
+
+                    

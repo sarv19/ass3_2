@@ -1,0 +1,17 @@
+ var int:integer; realNum:real;
+                    procedure noMain();
+                    var boolArray : array [1 .. 2] of boolean;
+                    begin
+                        realNum := toReal(int);
+                        boolArray[int] := toBool(int);
+                    end
+
+                    function toReal(int : integer):real;
+                    begin
+                        return int;
+                    end
+
+                    function toBool(int: integer):boolean;
+                    begin
+                        return (int = int) or (int <> int);
+                    end

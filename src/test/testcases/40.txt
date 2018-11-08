@@ -1,0 +1,8 @@
+ procedure notMain();
+                    begin
+                        return;
+                        if 1 > 2
+                            then putIntLn(1);
+                        else putIntLn(1);
+
+                    end

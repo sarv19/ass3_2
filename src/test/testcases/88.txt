@@ -1,0 +1,12 @@
+ procedure noMain();
+                    var a:boolean; b :integer;
+                    begin
+                        a := foo(b) or foo(b + 1);
+                    end
+
+                    function foo(a:real):boolean;
+                    begin
+                        return True;
+                    end
+
+                    

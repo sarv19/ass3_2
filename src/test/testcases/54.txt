@@ -1,0 +1,13 @@
+ procedure main();
+                    var a: integer;
+                    begin
+                        while (a < 1.2) do
+                            begin
+                                while (a < 1) do
+                                    break;
+                                break;
+                            end
+                        continue;
+                    end
+
+                    

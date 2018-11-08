@@ -1,0 +1,7 @@
+ procedure main();
+                    var a,b: array [1 .. 2] of integer;
+                    begin
+                        a[2][1] := b[a[1]];
+                    end
+
+                    

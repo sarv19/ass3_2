@@ -1,0 +1,5 @@
+ procedure main();
+                    begin
+                        with a:integer; do break;
+                        return;
+                    end

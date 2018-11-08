@@ -1,0 +1,9 @@
+ procedure notMain();
+                    var a,b,c: boolean;
+                    begin
+                        a := b := c := True or False;
+                        if (a or else b) and then c
+                            then return;
+                            else return;
+                    end
+                    

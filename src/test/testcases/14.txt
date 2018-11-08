@@ -1,0 +1,6 @@
+ procedure main();
+                    var a,b:integer;
+                    begin
+                        a := b := 1.1;
+                        return;
+                    end 

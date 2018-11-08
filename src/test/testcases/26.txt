@@ -1,0 +1,7 @@
+ procedure main();
+                    var a : integer;
+                    begin
+                        if a < 1 then return;
+                        else break;
+                        return;
+                    end

@@ -1,0 +1,14 @@
+ function foo():integer;
+                    var a:integer;
+                    begin
+                        with b:integer; do
+                            begin
+                                if a < 2
+                                    then
+                                        with c:integer; do return a + b + c;
+                                return a + b;
+                            end
+
+                    end
+
+                    

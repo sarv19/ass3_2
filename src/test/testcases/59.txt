@@ -1,0 +1,14 @@
+ function foo():integer;
+                    var a:integer;
+                    begin
+                        if a < 1
+                            then
+                                putIntLn(a);
+                            else
+                                putIntLn(a + 1);
+                        if a + 10 < 11
+                            then return a;
+                            else return a + 10;
+                    end
+
+                    

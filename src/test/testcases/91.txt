@@ -1,0 +1,8 @@
+ function foo(a:integer):array [1 .. 2] of integer;
+                    var b: array [1 .. 2] of integer;
+                    begin return b; end
+                    procedure notMain();
+                    var foo:integer;
+                    begin
+                        foo(1)[foo(1)[2]] := foo;
+                    end        

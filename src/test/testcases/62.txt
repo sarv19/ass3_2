@@ -1,0 +1,9 @@
+ function foo():integer;
+                    var a:integer;
+                    begin
+                        with b:integer; do
+                            with c:integer; do
+                                return a + b + c;
+                    end
+
+                    

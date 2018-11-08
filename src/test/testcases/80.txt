@@ -1,0 +1,5 @@
+ procedure main(AbC :integer);
+                    var AbC : real;
+                    begin end
+
+                    

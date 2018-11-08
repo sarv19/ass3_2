@@ -1,0 +1,7 @@
+ procedure main(abc :integer);
+                    begin
+                        abc := 1;
+                        break;
+                    end
+
+                    

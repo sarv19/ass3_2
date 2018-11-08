@@ -1,0 +1,9 @@
+ function complexFunc(a,b:integer; c:boolean; d:string; e:real):boolean;
+                    var f : array [1 .. 2] of boolean;
+                    begin
+                        c := complexFunc(-a,b,f[a + b],d,b) or complexFunc(b,a,complexFunc(b,a,f[-a],d,a),d,a);
+                        return complexFunc(a,b,complexFunc(b,a,f[a div b],d,e),d,a);
+                    end
+
+
+                    

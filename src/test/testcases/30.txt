@@ -1,0 +1,4 @@
+ procedure main(a:integer);
+                    begin
+                        return;
+                    end

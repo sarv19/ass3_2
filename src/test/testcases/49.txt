@@ -1,0 +1,9 @@
+ function foo():integer;
+                    var a: integer;
+                    begin
+                        while a < 1 do
+                            return 1;
+                    end
+
+                    procedure main();
+                    begin end

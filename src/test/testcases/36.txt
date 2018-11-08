@@ -1,0 +1,6 @@
+ function foo():integer;
+                    begin
+                        if 1 > 2 then return 1;
+                    end
+                    procedure main();
+                    begin end

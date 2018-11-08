@@ -1,0 +1,8 @@
+ procedure notMain();
+                    begin
+                        with a:integer; do
+                            begin
+                                putIntLn(a);
+                                return;
+                            end
+                    end

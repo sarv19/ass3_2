@@ -1,0 +1,4 @@
+
+                   procedure main();
+                   var a,a:integer;
+                   begin return; end

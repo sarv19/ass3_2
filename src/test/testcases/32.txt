@@ -1,0 +1,7 @@
+ procedure main();
+                    var a,b,c : string;
+                        d : array [1 .. 2] of string;
+                    begin
+                        a := b := c := d[1] := "1234";
+                        return;
+                    end

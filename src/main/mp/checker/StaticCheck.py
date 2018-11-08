@@ -50,7 +50,13 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitProgram(self,ast, c):
         #return [self.visit(x,c) for x in ast.decl]
-        return reduce(lambda x,y: [self.visit(y,x+c)]+x,ast.decl,[])
+        var_list = [x for x in ast.decl if type(x) is VarDecl]
+        res = [x for x in ast.decl if type(x) is not VarDecl]
+        lst = var_list+res
+        checkmain = self.lookup('main',res, lambda x: x.name.name)
+        if checkmain is None:
+            raise NoEntryPoint()
+        return reduce(lambda x,y: [self.visit(y,x+c)]+x,lst,[])
 
     def visitVarDecl(self, ast, c):
         return self.checkRedeclared(Symbol(ast.variable.name, ast.varType), Variable(),c)
@@ -62,6 +68,8 @@ class StaticChecker(BaseVisitor,Utils):
         except Redeclared as e:
             raise Redeclared(Parameter(),e.n)
         localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
+        for x in localenv:
+            print(x)
         tmp = list(map(lambda x: self.visit(x,localenv + c),ast.body))
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
         if type(ast.returnType) is VoidType:
@@ -74,6 +82,20 @@ class StaticChecker(BaseVisitor,Utils):
             for x in ast.body:
                 if type(x) is Return:
                     checkExpr = self.checkInReturn(x, ast.returnType, localenv)
+
+        for x in ast.body:
+            
+        # for x in ast.body:
+        #     if x is Continue or Break:
+        #         if self.checkBrCont(ast.body) is True:
+        #             if type(x) is Break:
+        #                 raise BreakNotInLoop()
+        #             elif type(x) is Continue:
+        #                 raise ContinueNotInLoop()
+        #     else:
+        #         break
+
+
         return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
 
     def checkReturnProce(self, state):
@@ -85,13 +107,54 @@ class StaticChecker(BaseVisitor,Utils):
         if type(state) is Return:
             return True
         elif type(state) is If:
-            return (self.checkReturnStatement(state.thenStmt) and self.checkReturnStatement(state.elseStmt))
+            # checkThen = []
+            # for x in state.thenStmt:
+            #     a = self.checkReturnStatement(x)
+            #     checkThen.append(a)
+            # k=False
+            # for x in checkThen:
+            #     if x is True:
+            #         k=True
+            #         break()
+            # checkElse = []
+            # for x in state.elseStmt:
+            #     a = self.checkReturnStatement(x)
+            #     checkElse.append(a)
+            # f=False
+            # for x in checkElse:
+            #     if x is True:
+            #         f=True
+            return (self.checkReturn(state.thenStmt) and self.checkReturn(state.elseStmt)) ##what is else is empty
         else:
              return False
 
     def checkReturn(self, body):
         for x in body:
             if (self.checkReturnStatement(x) is True):
+                return True
+        return False
+
+    def checkBreakCont(self, stmt):
+        if type(stmt) is Break or Continue:
+            return True
+        elif type(stmt) is If:
+            return (self.checkBrCont(stmt.thenStmt) or self.checkBrCont(stmt.elseStmt))
+        elif type(stmt) is While: ### no error
+            check = self.checkBrCont(stmt.sl)
+            if check is True:
+                return False
+        elif type(stmt) is For:  ### no error
+            check =  self.checkBrCont(stmt.loop)
+            if check is True:
+                return False
+        elif type(stmt) is With:
+            return self.checkBrCont(stmt.stmt)
+        else:
+            return False
+
+    def checkBrCont(self, lst):
+        for x in lst:
+            if (self.checkBreakCont(x) is True):
                 return True
         return False
 
@@ -110,9 +173,7 @@ class StaticChecker(BaseVisitor,Utils):
             elif type(gettype) is IntType and type(kind) is FloatType:
                 return FloatType()
             else:
-                print('out')
                 raise TypeMismatchInStatement(state)
-
 
 
     def visitCallStmt(self, ast, c):
@@ -123,7 +184,7 @@ class StaticChecker(BaseVisitor,Utils):
         res = self.lookup(tree.method.name,env,lambda x: x.name) #find if CallStmt name is already had
         if res is None or not type(res.mtype) is MType or not type(res.mtype.rettype) is VoidType:
         #      Undeclared
-            raise Undeclared(kind,ast.method.name)
+            raise Undeclared(kind,tree.method.name)
         elif len(res.mtype.partype) != len(at) or True in [type(a) != type(b) for a,b in zip(at,res.mtype.partype)]:
             raise err
         else:
@@ -228,6 +289,8 @@ class StaticChecker(BaseVisitor,Utils):
         if (type(lhs) is not type(rhs)):
             if (type(lhs) is not FloatType) or (type(rhs) is not IntType):
                 raise TypeMismatchInStatement(ast)
+        else:
+            return lhs
 
 
     def visitReturn(self, ast, c):
@@ -239,5 +302,11 @@ class StaticChecker(BaseVisitor,Utils):
         try:
             decl = reduce(lambda x, y: [self.visit(y,x)] + x, ast.decl,[])
         except Undeclared as e:
-            raise Undeclared(Identifier(),e.n)
+            raise Undeclared(Identifier(),e.n) ## WRONG
         body = list(map(lambda x: self.visit(x, decl + c),ast.stmt))
+
+    def visitArrayCell(self, ast, c):
+        arr = self.visit(ast.arr, c)
+        idx = self.visit(ast.idx, c)
+        if type(arr) is not ArrayType and type(idx) is not IntType:
+            raise TypeMismatchInExpression(ast)

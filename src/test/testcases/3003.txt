@@ -1,0 +1,1 @@
+Program([FuncDecl(Id(main),[VarDecl(Id(a),IntType)],VoidType(),[VarDecl(Id(b),FloatType),VarDecl(Id(c),BoolType)],[While(BinaryOp(>,Id(a),Id(b)),[Break]),[<AST.If object at 0x000002091174CB00>, <AST.Return object at 0x000002091174CB70>]])])

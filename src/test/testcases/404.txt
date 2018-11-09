@@ -1,1 +1,8 @@
-Program([VarDecl(Id(a),IntType),VarDecl(Id(b),FloatType),VarDecl(Id(putInt),FloatType)])
+
+                var i,j: real; k,j: integer;
+                procedure main();
+                begin end
+                procedure foo();
+                begin
+                end
+                

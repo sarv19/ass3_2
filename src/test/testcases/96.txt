@@ -1,0 +1,21 @@
+ procedure toBinary(n : integer);
+                    var i,j:integer;
+                        binary: array [1 .. 1000] of integer;
+                    begin
+                        i := 0;
+                        while (n > 0) do
+                            begin
+                                binary[i] := n mod 2;
+                                n := n div 2;
+                                i := i + 1;
+                            end
+                        for j := i - 1 to 0 do
+                            begin
+                                putInt(binary[j]);
+                                j := j - 1;
+                            end
+                    end
+                    procedure notMain();
+                    begin
+                        toBinary(10);
+                    end

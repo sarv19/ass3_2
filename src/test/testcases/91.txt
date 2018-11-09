@@ -5,4 +5,6 @@
                     var foo:integer;
                     begin
                         foo(1)[foo(1)[2]] := foo;
-                    end        
+                    end
+                    procedure main();
+                    begin end        

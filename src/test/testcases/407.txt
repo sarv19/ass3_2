@@ -1,1 +1,8 @@
-Program([FuncDecl(Id(main),[VarDecl(Id(a),IntType)],VoidType(),[VarDecl(Id(b),IntType)],[For(Id(a)IntLiteral(1),IntLiteral(2),True,[]),For(Id(b)FloatLiteral(1),IntLiteral(2),True,[])])])
+
+                procedure main();
+                begin end
+                procedure foo(foo: boolean;j:real);
+                var J: array [1 .. 5] of real;
+                begin
+                end
+                

@@ -40,7 +40,7 @@ class StaticChecker(BaseVisitor,Utils):
         self.ast = ast
 
     def checkRedeclared(self,sym, kind, env):
-        if self.lookup(sym.name, env, lambda x: x.name):
+        if self.lookup(sym.name.lower(), env, lambda x: x.name.lower()):
             raise Redeclared(kind, sym.name)
         else:
             return sym
@@ -57,13 +57,12 @@ class StaticChecker(BaseVisitor,Utils):
             if (type(x.returnType) is VoidType) and (not x.param):
                 poten.append(x)
         #lst = var_list+res
-        checkmain = self.lookup('main',poten, lambda x: x.name.name)
+        checkmain = self.lookup('main',poten, lambda x: x.name.name.lower())
         if checkmain is None:
             raise NoEntryPoint()
         nomain =[]
         yesmain=[]
         for x in res:
-            print(x.name.name)
             if x.name.name == 'main':
                 yesmain.append(x)
             elif x.name.name is not 'main':
@@ -81,13 +80,15 @@ class StaticChecker(BaseVisitor,Utils):
         except Redeclared as e:
             raise Redeclared(Parameter(),e.n)
         localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
-
-        tmp = list(map(lambda x: self.visit(x,localenv+ c),ast.body))
+        abc = Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
+        tmp = list(map(lambda x: self.visit(x,localenv+[abc]+ c),ast.body))
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
+
         if type(ast.returnType) is VoidType:
             if ast.body is not None:
                 for x in ast.body:
                     checkReturn = self.checkReturnProce(x)
+
         if type(ast.returnType) is not VoidType:
             if self.checkReturn(ast.body) is False:
                 raise FunctionNotReturn(ast.name.name)
@@ -98,7 +99,6 @@ class StaticChecker(BaseVisitor,Utils):
         if self.checkBrCont(ast.body) is True:
             raise BreakNotInLoop()
 
-
         return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
 
     def checkReturnProce(self, state):
@@ -106,32 +106,15 @@ class StaticChecker(BaseVisitor,Utils):
             if state.expr is not None:
                 raise TypeMismatchInStatement(state)
 
-    def checkReturnStatement(self, state):
+    def checkReturnStatement(self, state): ##check if enough return in one stmt
         if type(state) is Return:
             return True
         elif type(state) is If:
-            # checkThen = []
-            # for x in state.thenStmt:
-            #     a = self.checkReturnStatement(x)
-            #     checkThen.append(a)
-            # k=False
-            # for x in checkThen:
-            #     if x is True:
-            #         k=True
-            #         break()
-            # checkElse = []
-            # for x in state.elseStmt:
-            #     a = self.checkReturnStatement(x)
-            #     checkElse.append(a)
-            # f=False
-            # for x in checkElse:
-            #     if x is True:
-            #         f=True
             return (self.checkReturn(state.thenStmt) and self.checkReturn(state.elseStmt)) ##what is else is empty
         else:
              return False
 
-    def checkReturn(self, body):
+    def checkReturn(self, body):  ##check enough return in [stmt]
         for x in body:
             if (self.checkReturnStatement(x) is True):
                 return True
@@ -161,7 +144,7 @@ class StaticChecker(BaseVisitor,Utils):
                 return True
         return False
 
-    def checkInReturn(self, state, kind, env):
+    def checkInReturn(self, state, kind, env): ##check if the return type is right
         if state.expr is None:
             raise TypeMismatchInStatement(state)
         else:
@@ -180,37 +163,69 @@ class StaticChecker(BaseVisitor,Utils):
 
 
     def visitCallStmt(self, ast, c):
-        self.checkTypeMisMatch(Procedure(),TypeMismatchInStatement(ast),ast,c)
+        at = [self.visit(x,c) for x in ast.param] #get the type of param
+        res = self.lookup(ast.method.name.lower(),c,lambda x: x.name.lower()) #find if CallStmt name is already had
+        if res is None or not type(res.mtype) is MType or not type(res.mtype.rettype) is VoidType:
+        #      Undeclared
+            raise Undeclared(Procedure(),ast.method.name)
+
+        elif len(res.mtype.partype) != len(at) or True in [((type(a) != type(b)) and not (type(b) is FloatType and type(a) in [FloatType,IntType]) ) for a,b in zip(at,res.mtype.partype)]:
+            raise TypeMismatchInStatement(ast)
+        else:
+            for a,b in zip(at,res.mtype.partype):
+                if type(b) is ArrayType:
+                    if (b.lower is not a.lower) or (b.upper is not a.upper):
+                        raise TypeMismatchInStatement(ast)
+                    elif ((type(a.eleType)  != type(b.eleType)) and not (type(b.eleType) is FloatType and type(a.eleType) in [FloatType,IntType])):
+                        raise TypeMismatchInStatement(ast)
+            return res.mtype.rettype
+
+    def visitCallExpr(self, ast, c):
+        return self.checkTypeMisMatch(Function(), TypeMismatchInExpression(ast),ast,c)
 
     def checkTypeMisMatch(self, kind, err, tree, env):
         at = [self.visit(x,env) for x in tree.param] #get the type of param
 
-        res = self.lookup(tree.method.name,env,lambda x: x.name) #find if CallStmt name is already had
-        if res is None or not type(res.mtype) is MType or not type(res.mtype.rettype) is VoidType:
+        res = self.lookup(tree.method.name.lower(),env,lambda x: x.name.lower()) #find if CallStmt name is already had
+
+        if res is None or not type(res.mtype) is MType or type(res.mtype.rettype) is VoidType:
         #      Undeclared
             raise Undeclared(kind,tree.method.name)
-        elif len(res.mtype.partype) != len(at) or True in [((type(a) != type(b)) and (type(a)!=FloatType or type(b)!=IntType) ) for a,b in zip(at,res.mtype.partype)]:
-            raise err
-        # elif type(res.mtype.partype) is ArrayType and (res.lower is not at.lower or res.upper is not at.upper):
-        elif not self.checkArray(res.mtype.partype, at):
-            raise err
-        else:
-            return res.mtype.rettype
 
-    def checkArray(self, lst, tmp):
+        elif len(res.mtype.partype) != len(at) or True in [((type(a) != type(b)) and not (type(b) is FloatType and type(a) in [FloatType,IntType]) ) for a,b in zip(at,res.mtype.partype)]:
+            raise err
+        # elif len(res.mtype.partype) != len(at) or False in [self.checkArray(res.mtype.partype, at)]:
+        #     raise err
+        else:
+            for a,b in zip(at,res.mtype.partype):
+                if type(b) is ArrayType:
+                    if (b.lower is not a.lower) or (b.upper is not a.upper):
+                        raise err
+                    elif ((type(a.eleType)  != type(b.eleType)) and not (type(b.eleType) is FloatType and type(a.eleType) in [FloatType,IntType])):
+                        raise err
+            return res.mtype.rettype
+        # elif type(res.mtype.partype) is ArrayType and (res.lower is not at.lower or res.upper is not at.upper):
+        # elif not self.checkArray(res.mtype.partype, at):
+        #     raise err
+        # else:
+        #     return res.mtype.rettype
+
+    def checkArray(self, lst, tmp):  ##problem??
         for a, b in zip(tmp, lst):
             if type(a) is ArrayType and type(b) is ArrayType:
                 if (a.lower is b.lower) and (a.upper is b.upper) and (a.eleType is b.eleType):
                     return True
                 else:
                     return False
+            elif type(a) is FloatType and type(b) is IntType:
+                return True
+            else:
+                return False
 
-
-    def visitCallExpr(self, ast, c):
-        self.checkTypeMisMatch(Function(), TypeMismatchInExpression(ast),ast,c)
 
     def visitId(self,ast,c):
-        res = self.lookup(ast.name,c,lambda x: x.name)
+        res = self.lookup(ast.name.lower(),c,lambda x: x.name.lower())
+
         if res:
             return res.mtype
         else:
@@ -276,7 +291,7 @@ class StaticChecker(BaseVisitor,Utils):
             raise TypeMismatchInExpression(ast)
 
     def visitFor(self, ast, c):
-        res = self.lookup(ast.id.name,c,lambda x:x.name)
+        res = self.lookup(ast.id.name.lower(),c,lambda x:x.name.lower())
         if res is None:
             raise Undeclared(Identifier(),ast.id.name)
         # res = self.visit(ast.id,c)

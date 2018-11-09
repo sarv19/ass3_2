@@ -659,6 +659,19 @@ class CheckerSuite(unittest.TestCase):
         expect = "Type Mismatch In Statement: "+str(CallStmt(Id('foo'),[FloatLiteral(1.25),IntLiteral(10),StringLiteral('fdsf')]))
         self.assertTrue(TestChecker.test(input,expect,3005))
 
+    def test_break_cont6(self):
+        input = Program([FuncDecl(Id("main"),
+                            [],
+                            [VarDecl(Id('b'), FloatType()),
+                             VarDecl(Id('c'), BoolType())],
+                            [While(BinaryOp('>',Id('a'),Id('b')),[If(BinaryOp('>',Id('b'),IntLiteral(4)),
+                                                                     [While(BinaryOp('<=',IntLiteral(5),FloatLiteral(10)),[Continue()])],
+                                                                     [])]),
+                             While(BinaryOp('<=',Id('a'),Id('b')),[]),Break()
+                            ]
+                        ),VarDecl(Id('a'), IntType())])
+        expect = "Break Not In Loop"
+        self.assertTrue(TestChecker.test(input,expect,3006))
 
 
 

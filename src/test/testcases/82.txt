@@ -1,7 +1,7 @@
- procedure main(abc :integer);
+ procedure main(); begin end
+                    procedure notMain(abc :integer);
                     begin
                         abc := 1;
                         break;
                     end
-
                     

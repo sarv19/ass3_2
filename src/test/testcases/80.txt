@@ -1,5 +1,5 @@
- procedure main(AbC :integer);
+ procedure main(); begin end
+                    procedure notMain(AbC :integer);
                     var AbC : real;
                     begin end
-
                     

@@ -4,7 +4,6 @@
                         a[foo(a)[1]] := b[a[2] + foo(b)[2]];
                         a := b;
                     end
-
                     function foo(b: array [1 .. 2] of real): array [1 .. 2] of integer;
                     var a: array [1 .. 2] of integer;
                     begin

@@ -1,0 +1,24 @@
+ procedure towerOfHanoi(n : integer; start_disk : string; desination_disk : string; auxiliary_disk : string);
+                    begin
+                        if (n = 1) (* If only has 1 disk left *)
+                            then
+                                begin
+                                    putString("Move 1 disk from ");
+                                    putString(start_disk);
+                                    putString(" to ");
+                                    putStringLn(desination_disk);
+                                end
+
+                        towerOfHanoi(n - 1, start_disk, auxiliary_disk, desination_disk);
+                        putString("Move 1 disk from ");
+                        putString(start_disk);
+                        putString(" to ");
+                        putStringLn(desination_disk);
+                        towerOfHanoi(n - 1, auxiliary_disk, desination_disk, start_disk);
+                    end
+
+                    procedure notMain();
+                    begin
+                        towerOfHanoi(15, "A", "C", "B");
+                    end
+                    

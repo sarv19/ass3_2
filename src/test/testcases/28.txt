@@ -3,8 +3,6 @@
                         with a:integer; do
                             for a := 1 to 2 do
                                 break;
-
                     end
-
                     procedure main();
                     begin end

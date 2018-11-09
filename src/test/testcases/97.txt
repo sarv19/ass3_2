@@ -1,0 +1,21 @@
+ function square(n : integer):integer;
+                    begin return n*n; end
+                    function addBy1(n : integer):integer;
+                    begin return n + 1; end
+                    function minusBy1(n : integer):integer;
+                    begin return n - 1; end
+                    function diff(a: real; b: real ):real;
+                    begin
+                        if isPositive(a - b) then return a - b;
+                        else return b - a;
+                    end
+                    function isPositive(n : real):boolean;
+                    begin return n >= 0; end
+                    procedure notMain();
+                    var n:integer; difference:real;
+                    begin
+                        n := 5;
+                        difference := diff(square(addBy1(n)) , square(minusBy1(n)));
+                        putFloatLn(difference);
+                        putBoolLn(isPositive(difference));
+                    end

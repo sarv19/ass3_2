@@ -1,1 +1,9 @@
-Program([FuncDecl(Id(main),[],VoidType(),[VarDecl(Id(a),FloatType)],[CallStmt(Id(putIntLn),[Id(a)])])])
+
+                var i: integer;
+                var i: real;
+                procedure main();
+                begin end
+                procedure foo();
+                begin
+                end
+                

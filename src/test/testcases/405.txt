@@ -1,1 +1,7 @@
-Program([FuncDecl(Id(main),[VarDecl(Id(a),IntType),VarDecl(Id(a),FloatType)],VoidType(),[],[])])
+
+                procedure main();
+                begin end
+                procedure foo(a,b,a: integer);
+                begin
+                end
+                

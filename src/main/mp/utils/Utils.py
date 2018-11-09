@@ -5,4 +5,3 @@ class Utils:
             if name == func(x):
                 return x
         return None
-

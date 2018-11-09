@@ -1,1 +1,9 @@
-Program([FuncDecl(Id(main),[VarDecl(Id(a),IntType)],VoidType(),[VarDecl(Id(b),FloatType)],[For(Id(a)IntLiteral(1),IntLiteral(2),True,[CallStmt(Id(putIntLn),[Id(b)])])])])
+
+                var getint: real;
+                procedure main();
+                begin end
+                procedure foo(i: boolean;j:real);
+                begin
+                    getInt();
+                end
+                

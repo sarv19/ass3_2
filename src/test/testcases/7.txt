@@ -1,6 +1,5 @@
  function foo():integer;
                     begin return 1; end
-
                     function foo():integer;
                     begin return 1; end
                    procedure main();

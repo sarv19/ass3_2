@@ -1,6 +1,5 @@
  function foo(a:integer; b:boolean):integer;
                     begin return 1; end
-
                     procedure main();
                     var a:integer;
                     begin

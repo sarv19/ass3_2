@@ -1,0 +1,15 @@
+ function fibonaci(n : integer):integer;
+                    begin
+                        if (n = 0) then return 0;
+                        if (n = 1) then return 1;
+                        return fibonaci(n-1) + fibonaci(n-2);
+                    end
+                    procedure notMain();
+                    var n:integer;
+                    begin
+                        n := 5;
+                        putString("Number is ");
+                        putIntLn(n);
+                        putString("Fibonaci is ");
+                        putIntLn(fibonaci(n));
+                    end

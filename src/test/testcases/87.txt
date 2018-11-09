@@ -3,10 +3,8 @@
                     begin
                         a := foo(b);
                     end
-
                     function foo(a:real):boolean;
                     begin
                         return True;
                     end
-
                     

@@ -143,6 +143,10 @@ class CheckerSuite(unittest.TestCase):
     # #     expect = "Type Mismatch In Statement: "+str(CallStmt(Id('foo'),[FloatLiteral(1.25),IntLiteral(10),StringLiteral('fdsf')]))
     # #     self.assertTrue(TestChecker.test(input,expect,3005))
     # #
+
+
+
+
     # def test_assign(self):
     #
     #     input = """ procedure main();
@@ -212,19 +216,19 @@ class CheckerSuite(unittest.TestCase):
     #                 end"""
     #     expect = "No entry point"
     #     self.assertTrue(TestChecker.test(input,expect,19))
-
-    def test_call_stmt_2(self):
-
-        input = """ procedure foo(a : array [1 .. 2] of integer);
-                    var b : array [1 .. 3] of integer;
-                    begin
-                        foo(b);
-                        return;
-                    end
-                    procedure main(); begin end"""
-        expect = "Type Mismatch In Statement: CallStmt(Id(foo),[Id(b)])"
-        self.assertTrue(TestChecker.test(input,expect,20))
-
+    #
+    # def test_call_stmt_2(self):
+    #
+    #     input = """ procedure foo(a : array [1 .. 2] of integer);
+    #                 var b : array [1 .. 3] of integer;
+    #                 begin
+    #                     foo(b);
+    #                     return;
+    #                 end
+    #                 procedure main(); begin end"""
+    #     expect = "Type Mismatch In Statement: CallStmt(Id(foo),[Id(b)])"
+    #     self.assertTrue(TestChecker.test(input,expect,20))
+    #
     # def test_call_stmt_3(self):
     #
     #     input = """ procedure foo(a : array [1 .. 2] of integer);
@@ -611,7 +615,7 @@ class CheckerSuite(unittest.TestCase):
     #                 """
     #     expect = "No entry point"
     #     self.assertTrue(TestChecker.test(input,expect,50))
-    #
+
     # def test_for_4(self):
     #     input = """ procedure main();
     #                 var a: integer;
@@ -626,21 +630,25 @@ class CheckerSuite(unittest.TestCase):
     #                 """
     #     expect = "Continue Not In Loop"
     #     self.assertTrue(TestChecker.test(input,expect,51))
-    #
+    #     str(For(Id(a),IntLiteral(1),IntLiteral(2),True,[For(Id(a),IntLiteral(2),IntLiteral(5),True,[Continue])]))
+# """ procedure main();
+#             var a: integer;
+#             begin
+#                 for a := 1 to 2 do
+#                     begin
+#                         for a := 2 to 5 do
+#                             continue;
+#                         continue;
+#                     end
+#                 break;
+#             end
+#
+#             """
     # def test_for_5(self):
-    #     input = """ procedure main();
-    #                 var a: integer;
-    #                 begin
-    #                     for a := 1 to 2 do
-    #                         begin
-    #                             for a := 2 to 5 do
-    #                                 continue;
-    #                             continue;
-    #                         end
-    #                     break;
-    #                 end
-    #
-    #                 """
+    #     input = Program([FuncDecl(Id('main'),
+    #                              [],
+    #                              [VarDecl(Id('a'),IntType())],
+    #                              [For(Id('a'),IntLiteral(2), IntLiteral(5),True,[For(Id('a'),IntLiteral(2), IntLiteral(5),True,[Continue()]),Continue()]),Break()])])
     #     expect = "Break Not In Loop"
     #     self.assertTrue(TestChecker.test(input,expect,52))
     #
@@ -688,7 +696,7 @@ class CheckerSuite(unittest.TestCase):
     #                 """
     #     expect = "Continue Not In Loop"
     #     self.assertTrue(TestChecker.test(input,expect,55))
-    #
+
     # def test_while_4(self):
     #     input = """ procedure main();
     #                 var a: integer;
@@ -938,24 +946,24 @@ class CheckerSuite(unittest.TestCase):
     #                 """
     #     expect = "Type Mismatch In Statement: AssignStmt(Id(a),Id(b))"
     #     self.assertTrue(TestChecker.test(input,expect,72))
-    #
-    # def test_arraycell_9(self):
-    #     input = """ procedure main();
-    #                 var a,b: array [1 .. 2] of integer;
-    #                 begin
-    #                     a[foo(a)[1]] := b[a[2] + foo(b)[2]];
-    #                     a := b;
-    #                 end
-    #
-    #                 function foo(b: array [1 .. 2] of real): array [1 .. 2] of integer;
-    #                 var a: array [1 .. 2] of integer;
-    #                 begin
-    #                     return a;
-    #                 end
-    #                 """
-    #     expect = "Type Mismatch In Statement: AssignStmt(Id(a),Id(b))"
-    #     self.assertTrue(TestChecker.test(input,expect,73))
-    #
+
+    def test_arraycell_9(self):
+        input = """ procedure main();
+                    var a,b: array [1 .. 2] of integer;
+                    begin
+                        a[foo(a)[1]] := b[a[2] + foo(b)[2]];
+                        a := b;
+                    end
+
+                    function foo(b: array [1 .. 2] of real): array [1 .. 2] of integer;
+                    var a: array [1 .. 2] of integer;
+                    begin
+                        return a;
+                    end
+                    """
+        expect = "Type Mismatch In Statement: AssignStmt(Id(a),Id(b))"
+        self.assertTrue(TestChecker.test(input,expect,73))
+
     # def test_if_1(self):
     #     input = """ procedure notMain();
     #                 var a,b,c: boolean;
@@ -981,7 +989,7 @@ class CheckerSuite(unittest.TestCase):
     #                 """
     #     expect = "No entry point"
     #     self.assertTrue(TestChecker.test(input,expect,75))
-    #
+
     # def test_for_6(self):
     #     input = """
     #                 procedure main();

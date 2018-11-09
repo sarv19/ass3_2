@@ -1,13 +1,1 @@
- procedure main();
-                    var a: integer;
-                    begin
-                        for a := 1 to 2 do
-                            begin
-                                for a := 2 to 5 do
-                                    continue;
-                                continue;
-                            end
-                        break;
-                    end
-
-                    
+Program([FuncDecl(Id(main),[],VoidType(),[VarDecl(Id(a),IntType)],[For(Id(a),IntLiteral(2),IntLiteral(5),True,[For(Id(a),IntLiteral(2),IntLiteral(5),True,[Continue]),Continue]),Break])])

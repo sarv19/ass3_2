@@ -1,1 +1,1 @@
-[<StaticCheck.Symbol object at 0x000001A552FD64A8>]
+Type Mismatch In Expression: ArrayCell(ArrayCell(Id(a),IntLiteral(2)),IntLiteral(1))

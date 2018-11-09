@@ -52,10 +52,23 @@ class StaticChecker(BaseVisitor,Utils):
         #return [self.visit(x,c) for x in ast.decl]
         var_list = [x for x in ast.decl if type(x) is VarDecl]
         res = [x for x in ast.decl if type(x) is not VarDecl]
-        lst = var_list+res
-        checkmain = self.lookup('main',res, lambda x: x.name.name)
+        poten = []
+        for x in res:
+            if (type(x.returnType) is VoidType) and (not x.param):
+                poten.append(x)
+        #lst = var_list+res
+        checkmain = self.lookup('main',poten, lambda x: x.name.name)
         if checkmain is None:
             raise NoEntryPoint()
+        nomain =[]
+        yesmain=[]
+        for x in res:
+            print(x.name.name)
+            if x.name.name == 'main':
+                yesmain.append(x)
+            elif x.name.name is not 'main':
+                nomain.append(x)
+        lst =  var_list+ nomain + yesmain
         return reduce(lambda x,y: [self.visit(y,x+c)]+x,lst,[])
 
     def visitVarDecl(self, ast, c):
@@ -68,9 +81,8 @@ class StaticChecker(BaseVisitor,Utils):
         except Redeclared as e:
             raise Redeclared(Parameter(),e.n)
         localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
-        listt = localenv+ [Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))] + c
 
-        tmp = list(map(lambda x: self.visit(x,localenv+ [Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))] + c),ast.body))
+        tmp = list(map(lambda x: self.visit(x,localenv+ c),ast.body))
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
         if type(ast.returnType) is VoidType:
             if ast.body is not None:
@@ -174,16 +186,25 @@ class StaticChecker(BaseVisitor,Utils):
         at = [self.visit(x,env) for x in tree.param] #get the type of param
 
         res = self.lookup(tree.method.name,env,lambda x: x.name) #find if CallStmt name is already had
-        print(type(res.mtype.partype))
         if res is None or not type(res.mtype) is MType or not type(res.mtype.rettype) is VoidType:
         #      Undeclared
             raise Undeclared(kind,tree.method.name)
         elif len(res.mtype.partype) != len(at) or True in [((type(a) != type(b)) and (type(a)!=FloatType or type(b)!=IntType) ) for a,b in zip(at,res.mtype.partype)]:
             raise err
-        elif type(res.mtype.partype) is ArrayType and (res.lower is not at.lower or res.upper is not at.upper):
+        # elif type(res.mtype.partype) is ArrayType and (res.lower is not at.lower or res.upper is not at.upper):
+        elif not self.checkArray(res.mtype.partype, at):
             raise err
         else:
             return res.mtype.rettype
+
+    def checkArray(self, lst, tmp):
+        for a, b in zip(tmp, lst):
+            if type(a) is ArrayType and type(b) is ArrayType:
+                if (a.lower is b.lower) and (a.upper is b.upper) and (a.eleType is b.eleType):
+                    return True
+                else:
+                    return False
+
 
     def visitCallExpr(self, ast, c):
         self.checkTypeMisMatch(Function(), TypeMismatchInExpression(ast),ast,c)

@@ -1,1 +1,1 @@
-[<StaticCheck.Symbol object at 0x000001A55316FBA8>]
+No entry point

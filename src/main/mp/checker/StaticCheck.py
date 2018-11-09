@@ -83,7 +83,6 @@ class StaticChecker(BaseVisitor,Utils):
         abc = Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
         tmp = list(map(lambda x: self.visit(x,localenv+[abc]+ c),ast.body))
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
-
         if type(ast.returnType) is VoidType:
             if ast.body is not None:
                 for x in ast.body:
@@ -94,7 +93,7 @@ class StaticChecker(BaseVisitor,Utils):
                 raise FunctionNotReturn(ast.name.name)
             for x in ast.body:
                 if type(x) is Return:
-                    checkExpr = self.checkInReturn(x, ast.returnType, localenv)
+                    checkExpr = self.checkInReturn(x, ast.returnType, localenv+c)
 
         if self.checkBrCont(ast.body) is True:
             raise BreakNotInLoop()
@@ -225,7 +224,10 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitId(self,ast,c):
         res = self.lookup(ast.name.lower(),c,lambda x: x.name.lower())
-
+        # print(ast)
+        # for x in c:
+        #     print(x)
+        # print()
         if res:
             return res.mtype
         else:
@@ -265,6 +267,7 @@ class StaticChecker(BaseVisitor,Utils):
         elif type(lefttype) is BoolType or type(righttype) is BoolType:
             raise TypeMismatchInExpression(ast)
         elif ast.op in ['>','<','<>','=','<=','>=']:
+            print('dsf')
             return BoolType()
         elif ast.op in ['*','-','+']:
             if type(lefttype) is IntType and type(righttype) is IntType:
@@ -283,9 +286,10 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitUnaryOp(self, ast, c):
         exp = self.visit(ast.body,c)
-        if ast.op is '-' and (type(exp) is IntType or FloatType):
+
+        if ast.op is '-' and (type(exp) is IntType or type(exp) is FloatType):
             return exp
-        elif ast.op is 'not' and type(exp) is BoolType:
+        elif ast.op == 'not' and type(exp) is BoolType:
             return exp
         else:
             raise TypeMismatchInExpression(ast)
@@ -317,6 +321,7 @@ class StaticChecker(BaseVisitor,Utils):
     def visitAssign(self, ast, c):
         lhs = self.visit(ast.lhs, c)
         rhs = self.visit(ast.exp, c)
+
         if type(lhs) is StringType or type(lhs) is ArrayType:
             raise TypeMismatchInStatement(ast)
 

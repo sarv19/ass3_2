@@ -1,1 +1,1 @@
-[<StaticCheck.Symbol object at 0x000001FDCCA2B6D8>, <StaticCheck.Symbol object at 0x000001FDCCA2B710>, <StaticCheck.Symbol object at 0x000001FDCCA2B3C8>]
+Redeclared Variable: a

@@ -1,14 +1,29 @@
 
-                var a: real;
-                var f: integer;
-                procedure main();
-                begin
-                    foo(false,a);
-                end
-                procedure foo(i: boolean;j:real);
-                begin
-                    putIntLn(4);
-                    f();
-                    a:=a+1;
-                end
-                
+function foo():integer;
+var a:integer;
+begin
+	a := 4;
+	if (a = 10) then begin
+		return 1;
+	end
+	return 10;
+end
+
+procedure main();
+var a:integer;
+begin
+	a := 0;
+
+	if (foo() > 1) then begin
+		if(foo2() <= 100) then
+
+			return ;
+		else
+			return ;
+	end
+	else begin
+		a := 2;
+		return ;
+	end
+end
+

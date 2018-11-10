@@ -1,9 +1,14 @@
 
-                procedure main();
-                begin end
-                procedure foo(i: boolean;j:real);
-                begin
-                    putIntLn(4);
-                end
-                var putintLN: integer;
-                
+var a, b, c:integer;
+var d:boolean;
+var e:real;
+var m: array [1 .. 100] of integer;
+function foo():integer; begin  return 0; end
+procedure main(); begin
+	b := foo();
+	d := true;
+	a := m[0] + 1;
+	c := m[d] + 1;
+	return ;
+end
+

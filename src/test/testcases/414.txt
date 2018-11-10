@@ -1,13 +1,21 @@
 
-                var a: real;
-                procedure main();
-                begin
-                    foo(false,a);
-                end
-                procedure foo(i: boolean;j:real);
-                begin
-                    putIntLn(4);
-                    goo();
-                    a:=a+1;
-                end
-                
+var a, b, c:integer;
+procedure foo(); begin
+	while (a < 100) do begin
+		a := a + 1;
+		break;
+	end
+	return ;
+end
+procedure main(); begin
+	while (a < 100) do begin
+		a := a + 1;
+		break;
+	end
+        foo();
+	if(a = 100) then break;
+	return ;
+end
+
+
+

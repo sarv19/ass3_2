@@ -36,6 +36,8 @@ class StaticChecker(BaseVisitor,Utils):
                    Symbol("putStringLn",MType([StringType()],VoidType())),
                    Symbol("putLn",MType([],VoidType()))]
 
+
+
     def __init__(self,ast):
         self.ast = ast
 
@@ -50,6 +52,18 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitProgram(self,ast, c):
         #return [self.visit(x,c) for x in ast.decl]
+        glo_decl =[]
+        # for i in ast.decl:
+        #     if type(i) is FuncDecl:
+        #         try:
+        #             param = reduce(lambda x,y: [self.visit(y,x).mtype]+x, i.param,[])
+        #         except Redeclared as e:
+        #             raise Redeclared(Parameter(), e.n)
+        #         kind = Procedure() if type(i.returnType) is VoidType else Function()
+        #         glo_decl += [self.checkRedeclared(Symbol(i.name.name, MType(param, i.returnType)),kind,c+glo_decl)]
+        #     else:
+        #         glo_decl += [self.checkRedeclared(Symbol(i.variable.name, i.varType),Variable(),c+glo_decl)]
+        global_decl = []
         var_list = [x for x in ast.decl if type(x) is VarDecl]
         res = [x for x in ast.decl if type(x) is not VarDecl]
         poten = []
@@ -57,6 +71,8 @@ class StaticChecker(BaseVisitor,Utils):
             if (type(x.returnType) is VoidType) and (not x.param):
                 poten.append(x)
         #lst = var_list+res
+        for x in var_list:
+            global_decl.append(Symbol(x.variable.name, x.varType))
         checkmain = self.lookup('main',poten, lambda x: x.name.name.lower())
         if checkmain is None:
             raise NoEntryPoint()
@@ -65,10 +81,18 @@ class StaticChecker(BaseVisitor,Utils):
         for x in res:
             if x.name.name == 'main':
                 yesmain.append(x)
-            elif x.name.name is not 'main':
+                global_decl.append(Symbol(x.name.name, MType([i.varType for i in x.param],x.returnType)))
+            elif x.name.name != 'main':
                 nomain.append(x)
+                global_decl.append(Symbol(x.name.name, MType([i.varType for i in x.param],x.returnType)))
         lst =  var_list+ nomain + yesmain
-        return reduce(lambda x,y: [self.visit(y,x+c)]+x,lst,[])
+        global_decl = global_decl+StaticChecker.global_envi
+        # return reduce(lambda x,y: [self.visit(y,x+c)]+x,lst,[])
+        # StaticChecker.global_decl += glo_decl+c
+        # return reduce(lambda x,y: [self.visit(y,glo_decl+c)]+x,ast.decl,[])
+        mainn= [self.visit(x, global_decl) for x in ast.decl]
+        return
+
 
     def visitVarDecl(self, ast, c):
         return self.checkRedeclared(Symbol(ast.variable.name, ast.varType), Variable(),c)
@@ -81,13 +105,12 @@ class StaticChecker(BaseVisitor,Utils):
             raise Redeclared(Parameter(),e.n)
         localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
         abc = Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
-        tmp = list(map(lambda x: self.visit(x,localenv+[abc]+ c),ast.body))
+
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
         if type(ast.returnType) is VoidType:
             if ast.body is not None:
                 for x in ast.body:
                     checkReturn = self.checkReturnProce(x)
-
         if type(ast.returnType) is not VoidType:
             if self.checkReturn(ast.body) is False:
                 raise FunctionNotReturn(ast.name.name)
@@ -97,7 +120,8 @@ class StaticChecker(BaseVisitor,Utils):
 
         if self.checkBrCont(ast.body) is True:
             raise BreakNotInLoop()
-
+        # tmp = list(map(lambda x: self.visit(x,localenv+c),ast.body))
+        tmp = [self.visit(x, localenv+c) for x in ast.body]
         return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
 
     def checkReturnProce(self, state):
@@ -109,7 +133,7 @@ class StaticChecker(BaseVisitor,Utils):
         if type(state) is Return:
             return True
         elif type(state) is If:
-            return (self.checkReturn(state.thenStmt) and self.checkReturn(state.elseStmt)) ##what is else is empty
+            return (self.checkReturn(state.thenStmt) and self.checkReturn(state.elseStmt)) ##what if else is empty??
         else:
              return False
 
@@ -224,10 +248,6 @@ class StaticChecker(BaseVisitor,Utils):
 
     def visitId(self,ast,c):
         res = self.lookup(ast.name.lower(),c,lambda x: x.name.lower())
-        # print(ast)
-        # for x in c:
-        #     print(x)
-        # print()
         if res:
             return res.mtype
         else:
@@ -267,7 +287,6 @@ class StaticChecker(BaseVisitor,Utils):
         elif type(lefttype) is BoolType or type(righttype) is BoolType:
             raise TypeMismatchInExpression(ast)
         elif ast.op in ['>','<','<>','=','<=','>=']:
-            print('dsf')
             return BoolType()
         elif ast.op in ['*','-','+']:
             if type(lefttype) is IntType and type(righttype) is IntType:

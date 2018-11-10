@@ -1,12 +1,30 @@
 
         var a:integer;
-var b:real;
-var m:array[1 .. 10] of integer;
-procedure main(); begin
-	b := m[1] + -1;
-	b := b * (1.0 + 1);
-	b := not (m[1] = 1);
-	return ;
-end
+        function foo(a, b:integer):integer;
+        begin
+	       if (a > b) then a := 1 + b;
+	       else a := b + 2;
+	       return a;
+        end
+        function foo1(a:integer):integer;
+        var b, c, d:integer;
+        begin
+	           b := 2;
+	           c := 3;
+	           if (a > b) then d := a + c;
+	           else d := b + foo2(1);
+	           return d;
+       end
+       var b:integer;
+       function foo2(a:integer):integer;
+       begin
+	      while (a > 5) do a := a + 1;
 
+	         return a;
+      end
+      procedure main(); begin
+	     a := foo(foo1(1),foo2(2));
+	     funy(4);
+	     return ;
+      end
 

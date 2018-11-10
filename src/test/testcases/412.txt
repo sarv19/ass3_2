@@ -1,11 +1,13 @@
 
-                procedure main();
-                begin
-                    foo(true,2.0);
-                    foo(false,a);
-                end
-                procedure foo(i: boolean;j:real);
-                begin
-                    putIntLn(4);
-                end
-                
+var a:integer;
+var m:array[1 .. 100] of real;
+procedure foo(); begin
+	a := - -(a - -1);
+end
+procedure main(); begin
+        foo();
+	a := -(m[1] + -1 > 1.2);
+	return ;
+end
+
+

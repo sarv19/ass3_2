@@ -36,8 +36,6 @@ class StaticChecker(BaseVisitor,Utils):
                    Symbol("putStringLn",MType([StringType()],VoidType())),
                    Symbol("putLn",MType([],VoidType()))]
 
-
-
     def __init__(self,ast):
         self.ast = ast
 
@@ -51,91 +49,128 @@ class StaticChecker(BaseVisitor,Utils):
         return self.visit(self.ast,StaticChecker.global_envi)
 
     def visitProgram(self,ast, c):
-        #return [self.visit(x,c) for x in ast.decl]
-        glo_decl =[]
-        # for i in ast.decl:
-        #     if type(i) is FuncDecl:
-        #         try:
-        #             param = reduce(lambda x,y: [self.visit(y,x).mtype]+x, i.param,[])
-        #         except Redeclared as e:
-        #             raise Redeclared(Parameter(), e.n)
-        #         kind = Procedure() if type(i.returnType) is VoidType else Function()
-        #         glo_decl += [self.checkRedeclared(Symbol(i.name.name, MType(param, i.returnType)),kind,c+glo_decl)]
-        #     else:
-        #         glo_decl += [self.checkRedeclared(Symbol(i.variable.name, i.varType),Variable(),c+glo_decl)]
-        global_decl = []
-        var_list = [x for x in ast.decl if type(x) is VarDecl]
-        res = [x for x in ast.decl if type(x) is not VarDecl]
-        poten = []
-        for x in res:
-            if (type(x.returnType) is VoidType) and (not x.param):
-                poten.append(x)
-        #lst = var_list+res
-        for x in var_list:
-            global_decl.append(Symbol(x.variable.name, x.varType))
-        checkmain = self.lookup('main',poten, lambda x: x.name.name.lower())
-        if checkmain is None:
+        glo_decl = [] + self.global_envi
+        for x in ast.decl:
+            if type(x) is VarDecl:
+                glo_decl.append(self.checkRedeclared(Symbol(x.variable.name, x.varType),Variable(),glo_decl))
+            else:
+                kind = Procedure() if type(x.returnType) is VoidType else Function()
+                param = [i.varType for i in x.param]
+                glo_decl.append(self.checkRedeclared(Symbol(x.name.name,MType(param,x.returnType)),kind,glo_decl))
+
+        checkMain = self.lookup('main',glo_decl,lambda x:x.name.lower())
+        if checkMain is None or type(checkMain.mtype) is not MType or checkMain.mtype.partype or type(checkMain.mtype.rettype) is not VoidType:
             raise NoEntryPoint()
-        nomain =[]
-        yesmain=[]
-        for x in res:
-            if x.name.name == 'main':
-                yesmain.append(x)
-                global_decl.append(Symbol(x.name.name, MType([i.varType for i in x.param],x.returnType)))
-            elif x.name.name != 'main':
-                nomain.append(x)
-                global_decl.append(Symbol(x.name.name, MType([i.varType for i in x.param],x.returnType)))
-        lst =  var_list+ nomain + yesmain
-        global_decl = global_decl+StaticChecker.global_envi
-        # return reduce(lambda x,y: [self.visit(y,x+c)]+x,lst,[])
-        # StaticChecker.global_decl += glo_decl+c
-        # return reduce(lambda x,y: [self.visit(y,glo_decl+c)]+x,ast.decl,[])
-        mainn= [self.visit(x, global_decl) for x in ast.decl]
-        return
+        mainn = [self.visit(x, glo_decl) for x in ast.decl]
+        return mainn
 
 
     def visitVarDecl(self, ast, c):
-        return self.checkRedeclared(Symbol(ast.variable.name, ast.varType), Variable(),c)
+        # return self.checkRedeclared(Symbol(ast.variable.name, ast.varType), Variable(),c)
+        return Symbol(ast.variable.name, ast.varType)
 
     def visitFuncDecl(self,ast, c):
         # return list(map(lambda x: self.visit(x,(c,True)),ast.body))
-        try:
-            param = reduce(lambda x,y: [self.visit(y,x)] + x, ast.param,[])
-        except Redeclared as e:
-            raise Redeclared(Parameter(),e.n)
-        localenv = reduce(lambda x,y: [self.visit(y,x)] + x, ast.local,param) #reverse, local 1st then param
-        abc = Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
+        param =[]
+        for x in ast.param:
+            param.append(self.checkRedeclared(Symbol(x.variable.name, x.varType), Parameter(),param))
+        for x in ast.local:
+            param.append(self.checkRedeclared(Symbol(x.variable.name, x.varType), Variable(),param))
+        # abc = Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
 
+        tmp = [self.visit(x, param+c) for x in ast.body]
         kind = Procedure() if type(ast.returnType) is VoidType else Function()
+
+
         if type(ast.returnType) is VoidType:
-            if ast.body is not None:
                 for x in ast.body:
                     checkReturn = self.checkReturnProce(x)
         if type(ast.returnType) is not VoidType:
             if self.checkReturn(ast.body) is False:
                 raise FunctionNotReturn(ast.name.name)
             for x in ast.body:
-                if type(x) is Return:
-                    checkExpr = self.checkInReturn(x, ast.returnType, localenv+c)
+                self.checkReturnFunc(x, ast.returnType, param+c)
+        # self.checkReturn(ast.body,ast.returnType)
 
         if self.checkBrCont(ast.body) is True:
             raise BreakNotInLoop()
         # tmp = list(map(lambda x: self.visit(x,localenv+c),ast.body))
-        tmp = [self.visit(x, localenv+c) for x in ast.body]
-        return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
+        return Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType))
+        # return self.checkRedeclared(Symbol(ast.name.name, MType([i.varType for i in ast.param],ast.returnType)),kind,c)
+
+    def checkReturnFunc(self,state,kind,env):
+        if type(state) is Return:
+            self.checkInReturn(state, kind, env)
+        elif type(state) is If:
+            for x in state.thenStmt:
+                if type(x) is Return:
+                    self.checkInReturn(x, kind, env)
+            for x in state.elseStmt:
+                if type(x) is Return:
+                    self.checkInReturn(x, kind, env)
+        elif type(state) is With:
+            for x in state.stmt:
+                if type(x) is Return:
+                    self.checkInReturn(x, kind, env+[Symbol(i.variable.name,i.varType)for i in state.decl])
+        elif type(state) is For:
+            for x in state.loop:
+                if type(x) is Return:
+                    self.checkInReturn(x, kind, env)
+        elif type(state) is While:
+            for x in state.sl:
+                if type(x) is Return:
+                    self.checkInReturn(x, kind, env)
+
+
 
     def checkReturnProce(self, state):
         if type(state) is Return:
             if state.expr is not None:
                 raise TypeMismatchInStatement(state)
+        elif type(state) is If:
+            for x in state.thenStmt:
+                self.checkReturnProce(x)
+            for x in state.elseStmt:
+                self.checkReturnProce(x)
+        elif type(state) is With:
+            for x in state.stmt:
+                self.checkReturnProce(x)
+        elif type(state) is For:
+            for x in state.loop:
+                self.checkReturnProce(x)
+        elif type(state) is While:
+            for x in state.sl:
+                if type(x) is Return:
+                    self.checkReturnProce(x)
+
+    def checkInReturn(self, state, kind, env): ##check if the return type is right
+        if state.expr is None:
+            raise TypeMismatchInStatement(state)
+        else:
+            gettype = self.visit(state.expr,env)
+            if type(gettype) is type(kind) and type(gettype) is not ArrayType:
+                return gettype
+            elif type(gettype) is type(kind) and type(gettype) is ArrayType:
+                if gettype.lower is kind.lower and gettype.upper is kind.upper and type(gettype.eleType) is type(kind.eleType):
+                    return gettype
+                else:
+                    raise TypeMismatchInStatement(state)
+            elif type(gettype) is IntType and type(kind) is FloatType:
+                return FloatType()
+            else:
+                raise TypeMismatchInStatement(state)
+
 
     def checkReturnStatement(self, state): ##check if enough return in one stmt
-        if type(state) is Return:
+        if type(state) is If:
+            thenn = self.checkReturn(state.thenStmt)
+            elsee = self.checkReturn(state.elseStmt) if state.elseStmt != [] else False
+            return thenn and elsee ##what if else is empty??
+        elif type(state) is With:
+            return self.checkReturn(state.stmt)
+        elif type(state) is Return:
             return True
-        elif type(state) is If:
-            return (self.checkReturn(state.thenStmt) and self.checkReturn(state.elseStmt)) ##what if else is empty??
-        else:
-             return False
+        return False
 
     def checkReturn(self, body):  ##check enough return in [stmt]
         for x in body:
@@ -166,23 +201,6 @@ class StaticChecker(BaseVisitor,Utils):
             if (self.checkBreakCont(x) is True):
                 return True
         return False
-
-    def checkInReturn(self, state, kind, env): ##check if the return type is right
-        if state.expr is None:
-            raise TypeMismatchInStatement(state)
-        else:
-            gettype = self.visit(state.expr,env)
-            if type(gettype) is type(kind) and type(gettype) is not ArrayType:
-                return gettype
-            elif type(gettype) is type(kind) and type(gettype) is ArrayType:
-                if gettype.lower is kind.lower and gettype.upper is kind.upper and type(gettype.eleType) is type(kind.eleType):
-                    return gettype
-                else:
-                    raise TypeMismatchInStatement(state)
-            elif type(gettype) is IntType and type(kind) is FloatType:
-                return FloatType()
-            else:
-                raise TypeMismatchInStatement(state)
 
 
     def visitCallStmt(self, ast, c):
@@ -249,7 +267,10 @@ class StaticChecker(BaseVisitor,Utils):
     def visitId(self,ast,c):
         res = self.lookup(ast.name.lower(),c,lambda x: x.name.lower())
         if res:
-            return res.mtype
+            if type(res.mtype) is not MType:
+                return res.mtype
+            else:
+                raise Undeclared(Identifier(), ast.name)
         else:
             raise Undeclared(Identifier(), ast.name)
 
@@ -280,7 +301,7 @@ class StaticChecker(BaseVisitor,Utils):
         if type(lefttype) is StringType or type(righttype) is StringType:
             raise TypeMismatchInExpression(ast)
         elif type(lefttype) is BoolType and type(righttype) is BoolType:
-            if ast.op in ['and','or','andthen','orelse']:
+            if ast.op.lower() in ['and','or','andthen','orelse']:
                 return BoolType()
             else:
                 raise TypeMismatchInExpression(ast)
@@ -293,7 +314,7 @@ class StaticChecker(BaseVisitor,Utils):
                 return IntType()
             else:
                 return FloatType()
-        elif ast.op in ['mod','div']:
+        elif ast.op.lower() in ['mod','div']:
             if type(lefttype) is IntType and type(righttype) is IntType:
                 return IntType()
             else:
@@ -308,7 +329,7 @@ class StaticChecker(BaseVisitor,Utils):
 
         if ast.op is '-' and (type(exp) is IntType or type(exp) is FloatType):
             return exp
-        elif ast.op == 'not' and type(exp) is BoolType:
+        elif ast.op.lower() == 'not' and type(exp) is BoolType:
             return exp
         else:
             raise TypeMismatchInExpression(ast)
@@ -357,10 +378,13 @@ class StaticChecker(BaseVisitor,Utils):
             return exp
 
     def visitWith(self, ast, c):
-        try:
-            decl = reduce(lambda x, y: [self.visit(y,x)] + x, ast.decl,[])
-        except Redeclared as e:
-            raise Redeclared(Variable(),e.n) ## WRONG
+        decl = []
+        # try:
+        #     decl = reduce(lambda x, y: [self.visit(y,x)] + x, ast.decl,[])
+        # except Redeclared as e:
+        #     raise Redeclared(Variable(),e.n) ## WRONG
+        for x in ast.decl:
+            decl.append(self.checkRedeclared(Symbol(x.variable.name,x.varType),Variable(),decl))
         body = list(map(lambda x: self.visit(x, decl + c),ast.stmt))
 
     def visitArrayCell(self, ast, c):
